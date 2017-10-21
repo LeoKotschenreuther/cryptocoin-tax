@@ -1,4 +1,5 @@
 from coinbase.wallet.client import Client
+
 from .utils import Transaction
 
 
@@ -17,7 +18,7 @@ class Coinbase(object):
                                 if account['type'] == 'wallet')
         transactions = {}
         for account in transaction_accounts:
-            currency = account['currency']
+            currency = account['currency'].lower()
             transactions[currency] = []
             valid_buys = (buy for buy in client.get_buys(account['id'])['data']
                           if buy['committed'])
@@ -27,8 +28,8 @@ class Coinbase(object):
                     currency=currency,
                     created_at=buy['created_at'],
                     amount=buy['amount']['amount'],
-                    total=buy['total']['amount'])
-                )
+                    total=buy['total']['amount']
+                ))
             valid_sells = (sell for sell
                            in client.get_sells(account['id'])['data']
                            if sell['committed'])
