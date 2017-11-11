@@ -56,6 +56,8 @@ def _process_sale(transaction, lots):
         if asset_sale.is_loss():
             wash_sale_lots = _wash_sale_lots(transaction, lots)
             if wash_sale_lots:
+                # todo:
+                # calculate wash sale by number of shares
                 chosen_lot = min(wash_sale_lots, key=lambda lot: lot.price)
                 # todo:
                 # increase holding period of chosen_lot by holding_period of
