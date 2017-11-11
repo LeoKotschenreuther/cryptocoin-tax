@@ -1,4 +1,5 @@
-from decimal import *
+from datetime import datetime
+from decimal import Decimal
 
 
 class Transaction(object):
@@ -12,6 +13,10 @@ class Transaction(object):
             self.total = Decimal(total)
         elif price and fee:
             self.total = Decimal(amount) * Decimal(price) + Decimal(fee)
+
+    @property
+    def created_at_date(self):
+        return datetime.strptime(self.created_at[:10], "%Y-%m-%d").date()
 
     @property
     def price(self):
