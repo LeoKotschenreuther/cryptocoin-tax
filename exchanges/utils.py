@@ -22,4 +22,5 @@ class Transaction(object):
     # price returns the price per share of the Transaction
     @property
     def price(self):
+        print(self.total, self.amount)
         return self.total / self.amount
