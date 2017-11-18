@@ -9,10 +9,12 @@ class GDAX(object):
         self._key = key
         self._secret = secret
 
+    # _client creates and returns a GDAX client
     def _client(self):
         return gdax.AuthenticatedClient(self._key, self._secret,
                                         self._passphrase)
 
+    # getTransactions pulls all transactions from the GDAX API
     def getTransactions(self):
         client = self._client()
         transactions = {}

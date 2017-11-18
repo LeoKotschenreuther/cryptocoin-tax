@@ -13,7 +13,7 @@ if __name__ == '__main__':
     gdax = GDAX(config['gdax.key'], config['gdax.secret'],
                 config['gdax.passphrase'])
 
-    asset_sales = calculate_taxes([coinbase, gdax])
+    asset_sales = calculate_gains_losses([coinbase, gdax])
 
     total_gain_loss = sum(sale.gain_loss for sale in asset_sales)
     print("total gains/loss:")

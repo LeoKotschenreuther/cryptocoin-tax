@@ -8,9 +8,11 @@ class Coinbase(object):
         self._key = key
         self._secret = secret
 
+    # _client creates and returns a Coinbase client
     def _client(self):
         return Client(self._key, self._secret)
 
+    # getTransactions pulls all transactions from the Coinbase API
     def getTransactions(self):
         client = self._client()
         accounts = client.get_accounts()

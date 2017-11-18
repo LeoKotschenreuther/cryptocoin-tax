@@ -7,5 +7,6 @@ class AssetSale(object):
         self.basis = basis
         self.gain_loss = proceeds - basis
 
+    # is_loss returns whether the AssetSale is a loss
     def is_loss(self):
         return self.gain_loss < 0

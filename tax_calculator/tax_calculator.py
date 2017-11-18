@@ -2,9 +2,11 @@ from datetime import timedelta
 
 from .utils import AssetSale
 
-WASH_SALE_DAYS = 30
+WASH_SALE_DAYS_LIMIT = 30
 
 
+# _extract_transactions pulls all transactions from the specified exchanges and
+# groups them by currencies
 def _extract_transactions(exchanges):
     transactions = {}
     for exchange in exchanges:
@@ -15,46 +17,53 @@ def _extract_transactions(exchanges):
     return transactions
 
 
-def _is_wash_sale_lot(sale, buy):
-    days_difference = abs((sale.created_at_date - buy.created_at_date).days)
-    return days_difference <= WASH_SALE_DAYS
+# _is_wash_sale_time_period returns whether the two given dates are within the
+# wash sale time period
+def _is_wash_sale_time_period(sale_date, buy_date):
+    days_difference = abs((sale_date - buy_date).days)
+    return days_difference <= WASH_SALE_DAYS_LIMIT
 
 
-def _wash_sale_lots(sale, lots):
-    return [lot for lot in lots if _is_wash_sale_lot(sale, lot)]
+# _wash_sale_lots selects all lots that were bought within the wash sale time
+# period of the sale_date
+def _wash_sale_lots(sale_date, lots):
+    return [lot for lot in lots
+            if _is_wash_sale_time_period(sale_date, lot.created_at_date)]
 
 
-def _process_sale(transaction, lots):
+# _process_sale calculates the gain or loss of the specified sale considering
+# the given lots. It also applies a wash sale if necessary.
+def _process_sale(sale, lots):
     asset_sales = []
-    while transaction.amount > 0:
+    while sale.amount > 0:
         lot = max(lots, key=lambda lot: lot.price)
         asset_sale = None
-        if transaction.amount >= lot.amount:
-            proceeds = lot.amount / transaction.amount * transaction.total
+        if sale.amount >= lot.amount:
+            proceeds = lot.amount / sale.amount * sale.total
             asset_sale = AssetSale(
-                property=transaction.currency,
+                property=sale.currency,
                 aquired_at=lot.created_at,
-                sold_at=transaction.created_at,
+                sold_at=sale.created_at,
                 proceeds=proceeds,
                 basis=lot.total
             )
             lots.remove(lot)
-            transaction.amount -= lot.amount
-            transaction.total -= proceeds
-        elif lot.amount > transaction.amount:
-            basis = transaction.amount / lot.amount * lot.total
+            sale.amount -= lot.amount
+            sale.total -= proceeds
+        elif lot.amount > sale.amount:
+            basis = sale.amount / lot.amount * lot.total
             asset_sale = AssetSale(
-                property=transaction.currency,
+                property=sale.currency,
                 aquired_at=lot.created_at,
-                sold_at=transaction.created_at,
-                proceeds=transaction.total,
+                sold_at=sale.created_at,
+                proceeds=sale.total,
                 basis=basis
             )
-            lot.amount -= transaction.amount
+            lot.amount -= sale.amount
             lot.total -= basis
-            transaction.amount = 0
+            sale.amount = 0
         if asset_sale.is_loss():
-            wash_sale_lots = _wash_sale_lots(transaction, lots)
+            wash_sale_lots = _wash_sale_lots(sale.created_at_date, lots)
             if wash_sale_lots:
                 # todo:
                 # calculate wash sale by number of shares
@@ -75,7 +84,9 @@ def _process_sale(transaction, lots):
     return asset_sales
 
 
-def calculate_taxes(exchanges):
+# calculate_gains_losses calculates the gains and losses for all the
+# transactions from the given exchanges
+def calculate_gains_losses(exchanges):
     transactions = _extract_transactions(exchanges)
 
     asset_sales = []
