@@ -43,7 +43,7 @@ def _process_sale(sale, lots):
             sold_at=sale.created_at
         )
         # the chosen lot is being used up completley for this sale
-        if sale.amount >= lot.amount:
+        if lot.amount <= sale.amount:
             proceeds = lot.amount / sale.amount * sale.total
             asset_sale.proceeds = proceeds
             asset_sale.basis = lot.total
@@ -58,24 +58,6 @@ def _process_sale(sale, lots):
             lot.amount -= sale.amount
             lot.total -= basis
             sale.amount = 0
-        # if asset_sale.is_loss():
-        #     wash_sale_lots = _wash_sale_lots(sale.created_at_date, lots)
-        #     if wash_sale_lots:
-        #         # todo:
-        #         # calculate wash sale by number of shares
-        #         chosen_lot = min(wash_sale_lots, key=lambda lot: lot.price)
-        #         # todo:
-        #         # increase holding period of chosen_lot by holding_period of
-        #         # asset_sale
-        #         # this is important to differ between long term and short term
-        #         # holdings
-
-        #         # asset_sale.gain_loss is a negative number, hence we add the
-        #         # loss as a cost to the chosen_lot by subtracting
-        #         chosen_lot.total -= asset_sale.gain_loss
-        #         asset_sale.gain_loss = 0
-        #         # todo:
-        #         # add info about wash sale to asset_sale
         asset_sales.append(asset_sale)
     return asset_sales
 
