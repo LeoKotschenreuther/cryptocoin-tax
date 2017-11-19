@@ -12,9 +12,15 @@ if __name__ == '__main__':
     coinbase = Coinbase(config['coinbase.key'], config['coinbase.secret'])
     gdax = GDAX(config['gdax.key'], config['gdax.secret'],
                 config['gdax.passphrase'])
+    poloniex = Poloniex(config['poloniex.key'], config['poloniex.secret'],
+                        gdax)
+    # poloniex.getTransactions()
 
-    asset_sales = calculate_gains_losses([coinbase, gdax])
+    asset_sales, _ = calculate_gains_losses([coinbase, gdax, poloniex])
 
     total_gain_loss = sum(sale.gain_loss for sale in asset_sales)
     print("total gains/loss:")
     print("{} USD".format(total_gain_loss))
+
+    # for lot in leftover_lots:
+    #     print(lot.currency, lot.amount, lot.price)

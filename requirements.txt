@@ -4,6 +4,7 @@ chardet==3.0.4
 coinbase==2.0.6
 gdax==1.0.6
 idna==2.6
+poloniex==0.4.6
 profig==0.4.1
 pycrypto==2.6.1
 requests==2.13.0

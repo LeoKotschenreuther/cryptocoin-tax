@@ -2,8 +2,6 @@ from datetime import timedelta
 
 from .utils import AssetSale
 
-WASH_SALE_DAYS_LIMIT = 30
-
 
 # _extract_transactions pulls all transactions from the specified exchanges and
 # groups them by currencies
@@ -17,25 +15,13 @@ def _extract_transactions(exchanges):
     return transactions
 
 
-# _is_wash_sale_time_period returns whether the two given dates are within the
-# wash sale time period
-def _is_wash_sale_time_period(sale_date, buy_date):
-    days_difference = abs((sale_date - buy_date).days)
-    return days_difference <= WASH_SALE_DAYS_LIMIT
-
-
-# _wash_sale_lots selects all lots that were bought within the wash sale time
-# period of the sale_date
-def _wash_sale_lots(sale_date, lots):
-    return [lot for lot in lots
-            if _is_wash_sale_time_period(sale_date, lot.created_at_date)]
-
-
 # _process_sale calculates the gain or loss of the specified sale considering
 # the given lots. It also applies a wash sale if necessary.
 def _process_sale(sale, lots):
     asset_sales = []
     while sale.amount > 0:
+        if not lots:
+            print(sale.side, sale.currency, sale.created_at, sale.amount, sale.total)
         lot = max(lots, key=lambda lot: lot.price)
         asset_sale = AssetSale(
             property=sale.currency,
@@ -68,6 +54,7 @@ def calculate_gains_losses(exchanges):
     transactions = _extract_transactions(exchanges)
 
     asset_sales = []
+    leftover_lots = []
     for currency, c_transactions in transactions.items():
         lots = []
         c_transactions.sort(key=lambda transaction: transaction.created_at)
@@ -76,4 +63,5 @@ def calculate_gains_losses(exchanges):
                 lots.append(transaction)
             elif transaction.side == 'sell':
                 asset_sales += _process_sale(transaction, lots)
-    return asset_sales
+        leftover_lots += lots
+    return asset_sales, leftover_lots
