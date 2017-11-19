@@ -24,7 +24,7 @@ source .venv/bin/activate
 Finally it's time to install all the required pip packages. Pip doesn't find the poloniex package so we have to provide the link manually:
 
 ```sh
-pip3 install https://github.com/s4w3d0ff/python-poloniex/archive/v0.4.6.zip
+pip install https://github.com/s4w3d0ff/python-poloniex/archive/v0.4.6.zip
 pip install -r requirements.txt
 ```
 
