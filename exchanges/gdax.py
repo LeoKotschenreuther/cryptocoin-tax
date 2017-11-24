@@ -1,5 +1,6 @@
 import datetime
 import gdax
+import time
 
 from .utils import Transaction
 
@@ -28,15 +29,15 @@ class GDAX(object):
         client = self._get_client()
         start = ts - datetime.timedelta(seconds=ts.second)
         end = ts.replace(second=59)
-        data = None
-        for _ in range(3):
+        while True:
             data = client.get_product_historic_rates(currency + '-USD',
                                                      start=start.isoformat(),
                                                      end=end.isoformat(),
                                                      granularity=60)
-            if data:
-                break
-        return data[0][4]
+            if type(data) == list:
+                return data[0][4]
+            print("Called GDAX public API too often, sleeping for .5 seconds")
+            time.sleep(.5)
 
     # getTransactions pulls all transactions from the GDAX API
     def getTransactions(self):
