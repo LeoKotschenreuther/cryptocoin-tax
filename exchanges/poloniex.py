@@ -37,8 +37,6 @@ class Poloniex(object):
             underscore_position = key.index("_")
             currency = key[underscore_position + 1:].upper()
             base_currency = key[:underscore_position].upper()
-            # if currency != 'STEEM':
-            #     continue
             if currency not in transactions:
                 transactions[currency] = []
             if base_currency not in transactions:
@@ -58,7 +56,6 @@ class Poloniex(object):
                     base_price=base_price
                 )
                 if transaction['type'] == 'buy':
-                    # print(transaction)
                     c_t.fee_paid_in_currency(transaction['fee'], PRECISION)
                 transactions[currency].append(c_t)
                 # now the base currency, something like btc or eth

@@ -19,6 +19,7 @@ class Transaction(object):
             self.total = Decimal(base_amount) * Decimal(base_price)
 
     # when the fee was paid in the same currency as the transaction currency
+    # and the fee is just specified as a percentage of the amount
     def fee_paid_in_currency(self, fee_percent, precision=None):
         fee = self.amount * Decimal(fee_percent)
         if precision:

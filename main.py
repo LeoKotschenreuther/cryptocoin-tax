@@ -5,10 +5,8 @@ from tax_calculator import *
 
 CONFIG_FILE = 'config.cfg'
 
-if __name__ == '__main__':
-    config = profig.Config(CONFIG_FILE)
-    config.sync()
 
+def init_exchanges(config):
     config_keys = config.as_dict(dict_type=dict).keys()
     exchanges = []
 
@@ -16,13 +14,25 @@ if __name__ == '__main__':
         coinbase = Coinbase(config['coinbase.key'], config['coinbase.secret'])
         exchanges.append(coinbase)
     if 'gdax' in config_keys:
-        gdax = GDAX(config['gdax.key'], config['gdax.secret'],
-                    config['gdax.passphrase'])
-        exchanges.append(gdax)
+        gdaxPrivate = GDAXPrivate(config['gdax.key'], config['gdax.secret'],
+                                  config['gdax.passphrase'])
+        exchanges.append(gdaxPrivate)
+    if 'kraken' in config_keys:
+        kraken = Kraken(config['kraken.key'], config['kraken.secret'],
+                        GDAXPublic())
+        exchanges.append(kraken)
     if 'poloniex' in config_keys:
         poloniex = Poloniex(config['poloniex.key'], config['poloniex.secret'],
-                            gdax)
+                            GDAXPublic())
         exchanges.append(poloniex)
+
+    return exchanges
+
+if __name__ == '__main__':
+    config = profig.Config(CONFIG_FILE)
+    config.sync()
+
+    exchanges = init_exchanges(config)
 
     asset_sales, _ = calculate_gains_losses(exchanges)
 
