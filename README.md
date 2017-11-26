@@ -42,7 +42,7 @@ As of now, the following exchanges are supported:
 * Kraken
 * Poloniex
 
-For most of the exchanges, you just have to create an API key with the proper read authorization. However, since Bittrex doesn't support to pull all the transactions, you need to download the transaction history from Bittrex as a csv file. Place that file in the `data` directory and specify the exact location in the config file.
+For most of the exchanges, you just have to create an API key with the proper read authorization. However, since Bittrex doesn't support to pull all the transactions, you need to download the transaction history from Bittrex as a csv file. Place that file somewhere in the project folder, e.g. create a `data` directory. Then specify the exact location of the csv file in the config file.
 
 ## Running the program
 
