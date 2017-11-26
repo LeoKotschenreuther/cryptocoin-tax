@@ -32,6 +32,18 @@ pip install -r requirements.txt
 
 Copy the file `sample_config.cfg` and name the new version `config.cfg`. This is used to handle all the API keys. Open the newly created file and put in your actual API keys.
 
+## Collecting data from all the exchanges
+
+As of now, the following exchanges are supported:
+
+* Bittrex
+* Coinbase
+* GDAX
+* Kraken
+* Poloniex
+
+For most of the exchanges, you just have to create an API key with the proper read authorization. However, since Bittrex doesn't support to pull all the transactions, you need to download the transaction history from Bittrex as a csv file. Place that file in the `data` directory and specify the exact location in the config file.
+
 ## Running the program
 
 You can execute the program with the following command:

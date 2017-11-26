@@ -1,4 +1,5 @@
 import datetime
+from decimal import Decimal
 import gdax
 import time
 
@@ -28,17 +29,21 @@ class GDAXPrivate(object):
         for page in fills:
             valid_fills = (fill for fill in page if fill['settled'])
             for fill in valid_fills:
-                minus_position = fill['product_id'].index("-")
-                currency = fill['product_id'][:minus_position].upper()
+                dash_index = fill['product_id'].index("-")
+                currency = fill['product_id'][:dash_index].upper()
                 if currency not in transactions:
                     transactions[currency] = []
+                total = Decimal(fill['size']) * Decimal(fill['price'])
+                if fill['side'] == 'buy':
+                    total += Decimal(fill['fee'])
+                else:
+                    total -= Decimal(fill['fee'])
                 transactions[currency].append(Transaction(
                     side=fill['side'],
                     currency=currency,
                     created_at=self._to_timestamp(fill['created_at']),
                     amount=fill['size'],
-                    price=fill['price'],
-                    fee=fill['fee']
+                    total=total
                 ))
         return transactions
 

@@ -102,3 +102,6 @@ ENV/
 
 # config
 config.cfg
+
+# data
+data/bittrex.csv

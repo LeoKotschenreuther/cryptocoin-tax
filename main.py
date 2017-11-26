@@ -10,6 +10,9 @@ def init_exchanges(config):
     config_keys = config.as_dict(dict_type=dict).keys()
     exchanges = []
 
+    if 'bittrex' in config_keys:
+        bittrex = Bittrex(config['bittrex.csv_file'], GDAXPublic())
+        exchanges.append(bittrex)
     if 'coinbase' in config_keys:
         coinbase = Coinbase(config['coinbase.key'], config['coinbase.secret'])
         exchanges.append(coinbase)
@@ -34,11 +37,11 @@ if __name__ == '__main__':
 
     exchanges = init_exchanges(config)
 
-    asset_sales, _ = calculate_gains_losses(exchanges)
+    asset_sales, leftover_lots = calculate_gains_losses(exchanges)
 
     total_gain_loss = sum(sale.gain_loss for sale in asset_sales)
     print("total gains/loss:")
     print("{} USD".format(total_gain_loss))
 
-    # for lot in leftover_lots:
-    #     print(lot.currency, lot.amount, lot.price)
+    for lot in leftover_lots:
+        print(lot.currency, lot.created_at, lot.amount, lot.price)

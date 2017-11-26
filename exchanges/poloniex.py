@@ -1,7 +1,8 @@
 import datetime
+from decimal import Decimal
 import poloniex
 
-from .utils import Transaction
+from .utils import Transaction, opposite_side
 
 
 PRECISION = 8
@@ -17,12 +18,6 @@ class Poloniex(object):
     def _client(self):
         return poloniex.Poloniex(self._key, self._secret)
 
-    # _opposite_side returns the opposite of the given side
-    def _opposite_side(self, side):
-        if side == 'sell':
-            return 'buy'
-        return 'sell'
-
     # _to_timestamp converts the given string to a python timestamp object
     def _to_timestamp(self, ts_string):
         return datetime.datetime.strptime(ts_string, "%Y-%m-%d %H:%M:%S")
@@ -34,9 +29,9 @@ class Poloniex(object):
         start_date = datetime.datetime(datetime.datetime.now().year, 1, 1)
         fills = client.returnTradeHistory(start=start_date.timestamp())
         for key, history in fills.items():
-            underscore_position = key.index("_")
-            currency = key[underscore_position + 1:].upper()
-            base_currency = key[:underscore_position].upper()
+            underscore_index = key.index("_")
+            currency = key[underscore_index + 1:].upper()
+            base_currency = key[:underscore_index].upper()
             if currency not in transactions:
                 transactions[currency] = []
             if base_currency not in transactions:
@@ -44,27 +39,30 @@ class Poloniex(object):
             for transaction in history:
                 # first the currency that was traded
                 transaction_ts = self._to_timestamp(transaction['date'])
-                base_amount = transaction['total']
+                amount = Decimal(transaction['amount'])
+                base_amount = amount * Decimal(transaction['rate'])
+                if transaction['type'] == 'buy':
+                    fee = Decimal(transaction['fee']) * amount
+                    amount -= round(fee, PRECISION)
+                else:
+                    fee = Decimal(transaction['fee']) * base_amount
+                    base_amount -= round(fee, PRECISION)
                 base_price = self._gdax.getHistoryPrice(base_currency,
                                                         transaction_ts)
-                c_t = Transaction(
+                total = base_amount * Decimal(base_price)
+                transactions[currency].append(Transaction(
                     side=transaction['type'],
                     currency=currency,
                     created_at=transaction_ts,
-                    amount=transaction['amount'],
-                    base_amount=base_amount,
-                    base_price=base_price
-                )
-                if transaction['type'] == 'buy':
-                    c_t.fee_paid_in_currency(transaction['fee'], PRECISION)
-                transactions[currency].append(c_t)
+                    amount=amount,
+                    total=total
+                ))
                 # now the base currency, something like btc or eth
                 transactions[base_currency].append(Transaction(
-                    side=self._opposite_side(transaction['type']),
+                    side=opposite_side(transaction['type']),
                     currency=base_currency,
                     created_at=transaction_ts,
                     amount=base_amount,
-                    base_amount=base_amount,
-                    base_price=base_price
+                    total=total
                 ))
         return transactions
